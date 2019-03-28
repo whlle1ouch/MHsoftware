@@ -30,17 +30,14 @@ class TrayIcon(QSystemTrayIcon):
     def other(self):
         self.activated.connect(self.iconClicked)
         self.messageClicked.connect(self.mClicked)
-        self.setIcon(QIcon('icon/tray.icon'))
+        self.setIcon(QIcon('icon/tray.ico'))
         self.icon = self.MessageIcon()
 
     def iconClicked(self, reason):
         if reason == 2 or reason ==3:
-            pw = self.parent
-            if pw.isVisible():
-                pw.hide()
-            else:
-                pw.show()
-        print(reason)
+            pw = self.parent()
+            if not pw.isVisible():
+                pw.showNormal()
 
     def mClicked(self):
         self.showMessage("提示", "你点了消息", self.icon)
@@ -50,18 +47,17 @@ class TrayIcon(QSystemTrayIcon):
 
     def quit(self):
         self.setVisible(False)
-        self.parent.exit()
         qApp.quit()
         sys.exit()
 
-class window(QWidget):
-    def __init__(self, parent=None):
-        super(window, self).__init__(parent)
-        ti = TrayIcon(self)
-        ti.show()
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    w = window()
-    w.show()
-    sys.exit(app.exec_())
+# class window(QWidget):
+#     def __init__(self, parent=None):
+#         super(window, self).__init__(parent)
+#         ti = TrayIcon(self)
+#         ti.show()
+#
+# if __name__ == "__main__":
+#     app = QApplication(sys.argv)
+#     w = window()
+#     # w.show()
+#     sys.exit(app.exec_())

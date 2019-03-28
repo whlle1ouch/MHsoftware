@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from ui.mh import Ui_MainWindow
-from PyQt5.QtWidgets import QMainWindow, QFileDialog,QMessageBox
-from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QMainWindow, QFileDialog,QMessageBox,QMenu,QAction,QTextEdit
+from PyQt5.QtGui import QIcon,QCursor
 from excel import Excel
 from product import translate,colFormat
 import os,time
-from PyQt5.QtCore import QBasicTimer,QThread,pyqtSignal
+from PyQt5.QtCore import QBasicTimer,QThread,pyqtSignal,Qt,QPoint
 from tray import TrayIcon
 
 
@@ -17,28 +17,41 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.step = 0
         self.timer = QBasicTimer()
 
-
         #数据处理
         self.data = None
         self.output = None
 
         self.setFixedSize(self.width(), self.height())   ##固定窗口大小
         self.setWindowIcon(QIcon('icon/mh.ico'))   #设置系统图标
-        self.setTray()
 
+        #创建右键
+        # self.window.setContextMenuPolicy(Qt.CustomContextMenu)
+        # self.window.customContextMenuRequested.connect(self.createRightMenu)
+        # self.createContextMenu()
+
+        #显示托盘
+        self.setTray()
         self.setEvent()
         self.show()
 
 
     def setTray(self):
-        self.tray = TrayIcon()
-
+        self.tray = TrayIcon(self)
+        self.tray.show()
 
 
     def setEvent(self):
         self.pushButton_3.clicked.connect(self.on_clicked_pushButton_3)
         self.pushButton_2.clicked.connect(self.on_clicked_pushButton_2)
         self.pushButton.clicked.connect(self.on_clicked_pushButton)
+        self.showNormal()
+
+
+    def changeEvent(self, *args, **kwargs):
+        if self.isMinimized():
+            self.hide()
+        if self.isMaximized():
+            self.show()
 
 
     def on_clicked_pushButton_3(self):

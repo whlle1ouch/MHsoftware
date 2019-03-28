@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from ui.mh import Ui_MainWindow
 from PyQt5.QtWidgets import QMainWindow, QFileDialog,QMessageBox
+from PyQt5.QtGui import QIcon
 from excel import Excel
 from product import translate,colFormat
 import os,time
 from PyQt5.QtCore import QBasicTimer,QThread,pyqtSignal
-
+from tray import TrayIcon
 
 
 class MainWindow(QMainWindow,Ui_MainWindow):
@@ -15,11 +16,23 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.setupUi(self)
         self.step = 0
         self.timer = QBasicTimer()
+
+
+        #数据处理
         self.data = None
         self.output = None
 
+        self.setFixedSize(self.width(), self.height())   ##固定窗口大小
+        self.setWindowIcon(QIcon('icon/mh.ico'))   #设置系统图标
+        self.setTray()
+
         self.setEvent()
         self.show()
+
+
+    def setTray(self):
+        self.tray = TrayIcon()
+
 
 
     def setEvent(self):

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from ui.mh import Ui_MainWindow
-from PyQt5.QtWidgets import QMainWindow, QFileDialog,QMessageBox,QMenu,QAction,QTextEdit
+from PyQt5.QtWidgets import QMainWindow, QFileDialog,QMessageBox,QMenu,QAction,QTextEdit,QListWidget
 from PyQt5.QtGui import QIcon,QCursor
 from excel import Excel
 from product import translate,colFormat
@@ -24,15 +24,21 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.setFixedSize(self.width(), self.height())   ##固定窗口大小
         self.setWindowIcon(QIcon('icon/mh.ico'))   #设置系统图标
 
-        #创建右键
-        # self.window.setContextMenuPolicy(Qt.CustomContextMenu)
-        # self.window.customContextMenuRequested.connect(self.createRightMenu)
-        # self.createContextMenu()
 
         #显示托盘
         self.setTray()
         self.setEvent()
         self.show()
+
+
+    def contextMenuEvent(self, event):
+        menu = QMenu(self)
+
+        action1 = QAction('上传' , self , triggered=self.on_clicked_pushButton_3)
+        action2 = QAction('转化' , self , triggered=self.on_clicked_pushButton_2)
+        menu.addAction(action1)
+        menu.addAction(action2)
+        action = menu.exec_(self.mapToGlobal(event.pos()))
 
 
     def setTray(self):

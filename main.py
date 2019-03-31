@@ -4,6 +4,8 @@ from mainwindow import MainWindow
 from loading import LoadingWindow
 from PyQt5.QtNetwork import QLocalSocket,QLocalServer
 
+
+
 if __name__ == '__main__':
     try:
         app = 0 ##防止内核崩溃
@@ -17,7 +19,8 @@ if __name__ == '__main__':
             localServer = QLocalServer()
             localServer.listen(serverName)
             LoadingWindow()
-            w = MainWindow()
+            mhaind = MainWindow()
+
         sys.exit(app.exec_())
     except:
         pass

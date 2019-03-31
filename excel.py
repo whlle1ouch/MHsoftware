@@ -1,4 +1,5 @@
 import win32com.client as win32
+import re
 
 class Excel:
     def __init__(self,filename = None):
@@ -75,6 +76,12 @@ class Excel:
             for cell in row:
                 if cell is None:
                     newrow.append('')
+                elif isinstance(cell,str):
+                    cell = cell.strip()
+                    if is_int(cell):
+                        newrow.append(str(int(cell)))
+                    else:
+                        newrow.append(cell)
                 else:
                     newrow.append(str(cell))
                 # if isinstance(cell, win32.pywintypes.UnicodeType):
@@ -107,3 +114,18 @@ class Excel:
 
 
 
+def is_int(num):
+    pattern = re.compile('^[-+]?[0-9]+(\.0*)?$')
+    result = re.match(pattern,num)
+    if result:
+        return True
+    else:
+        return False
+
+def is_float(num):
+    pattern = re.compile('^[-+]?[0-9]+(\.[0-9]*)?$')
+    result = re.match(pattern,num)
+    if result:
+        return True
+    else:
+        return False

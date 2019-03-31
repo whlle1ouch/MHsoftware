@@ -1,15 +1,22 @@
 # -*- coding: utf-8 -*-
 from ui.mh import Ui_MainWindow
-from PyQt5.QtWidgets import QMainWindow, QFileDialog,QMessageBox,QMenu,QAction,QTextEdit,QListWidget
-from PyQt5.QtGui import QIcon,QCursor
+from PyQt5.QtWidgets import QMainWindow, QFileDialog,QMessageBox,QMenu,QAction,QTableWidget,QTableWidgetItem,QHeaderView
+from PyQt5.QtGui import QIcon
 from excel import Excel
-from product import translate,colFormat
+from product import transform2
 import os,time
-from PyQt5.QtCore import QBasicTimer,QThread,pyqtSignal,Qt,QPoint
+from PyQt5.QtCore import QBasicTimer,QThread,pyqtSignal,Qt,QPoint,QCoreApplication
 from tray import TrayIcon
+from mhsender import SenderWindow
 
 
 class MainWindow(QMainWindow,Ui_MainWindow):
+
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls,'_instance'):
+            cls._instance = QMainWindow.__new__(cls)
+        return cls._instance
+
 
     def __init__(self):
         QMainWindow.__init__(self)
@@ -20,10 +27,15 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         #数据处理
         self.data = None
         self.output = None
+        self.outformat = None
 
+        #主窗体
         self.setFixedSize(self.width(), self.height())   ##固定窗口大小
+        self.setWindowTitle('Magic&House SoftWare')
         self.setWindowIcon(QIcon('icon/mh.ico'))   #设置系统图标
 
+        #其他窗体
+        self.senderwindow = SenderWindow(mainwindow=self)
 
         #显示托盘
         self.setTray()
@@ -50,6 +62,8 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.pushButton_3.clicked.connect(self.on_clicked_pushButton_3)
         self.pushButton_2.clicked.connect(self.on_clicked_pushButton_2)
         self.pushButton.clicked.connect(self.on_clicked_pushButton)
+
+        self.pushButton_6.clicked.connect(self.on_clicked_pushButton_6)
         self.showNormal()
 
 
@@ -66,14 +80,14 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         if fname[0]:
             fpath = os.path.abspath(fname[0])
             if (not fpath.endswith('.xls')) and (not fpath.endswith('.xlsx')):
-                self.showMsg('错误!' , '请上xls或者xlsx文件')
+                self.showMsg('错误!' , '请上传xls或者xlsx文件')
                 return
             e = Excel(fpath)
             try:
                 self.data = e.getContiguousRange('订单表', 1, 1)
                 self.data = e.fixStringsAndDates(self.data)
             except Exception as e:
-                self.showMsg('错误！','发生错误：\n {}'.format(e.args[:]))
+                self.showMsg('错误！','发生错误：\n {}'.format(e.args))
             finally:
                 e.close()
 
@@ -90,11 +104,13 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             self.prb.qsignal.connect(self.timeEnd)
             try:
                 self.prb.start()
-                self.output = translate(self.data)
+                self.output,self.outformat = transform2(self.data)
+                print(self.output)
             except Exception as e:
-                self.showMsg('错误','发生错误：\n {}'.format(e.args[0]))
+                self.showMsg('错误','转换时发生错误：\n {}'.format(e.args))
             else:
                 self.showMsg('成功！','已转换完成')
+                self.addTable(self.output)
                 self.pushButton_2.setEnabled(True)
                 self.step = 100
         else:
@@ -118,11 +134,14 @@ class MainWindow(QMainWindow,Ui_MainWindow):
     def on_clicked_pushButton(self):
         if self.output:
             e = Excel()
-            rownum = len(self.output)
-            formats = colFormat()
-            for i in range(len(formats)):
-                e.setRangeFormat('sheet1',2,i+1,rownum,i+1,formats[i])
-            e.setRange('sheet1',1,1,self.output)
+            if self.outformat:
+                colnum = len(self.output)
+                for i in range(len(self.outformat)):
+                    e.setRangeFormat('sheet1',2,i+1,colnum,i+1,self.outformat[i])
+            if self.output:
+                for i,row in enumerate(self.output):
+                    for j,cell in enumerate(row):
+                        e.setCell('sheet1',i+1,j+1,cell)
             desktop = os.path.join(os.path.expanduser("~"), 'Desktop')
             savename = '一品周报'+time.strftime('%m%d',time.localtime())
             savepath = desktop+'\\'+savename
@@ -131,12 +150,33 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             try:
                 e.save(fpath)
             except Exception as e:
-                self.showMsg('错误！','发生错误：\n {}'.format(e.args[0]))
+                self.showMsg('错误！','保存时发生错误：\n {}'.format(e.args))
             finally:
                 e.close()
 
         else:
             self.showMsg('错误！','请先上传表格并完成转换。')
+
+    def on_clicked_pushButton_6(self):
+        self.hide()
+        self.senderwindow.show()
+
+
+    def addTable(self, value):
+        row = len(value)
+        col = len(value[0])
+        table = QTableWidget()
+        table.setRowCount(row)
+        table.setColumnCount(col)
+        table.setHorizontalHeaderLabels(value[0])
+        self.gridLayout.addWidget(table)
+        table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        for i,row in enumerate(value[1:]):
+            for j,cell in enumerate(row):
+                newItem =  QTableWidgetItem(cell)
+                table.setItem(i, j, newItem)
+
+
 
 
     def showMsg(self , title , msg):

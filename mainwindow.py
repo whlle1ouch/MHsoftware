@@ -12,6 +12,7 @@ from mhsender import SenderWindow
 from product import transform2
 from tray import TrayIcon
 from ui.mh import Ui_MainWindow
+import win32timezone
 
 
 class MainWindow(QMainWindow,Ui_MainWindow):
@@ -37,7 +38,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         #主窗体
         self.setFixedSize(self.width(), self.height())   ##固定窗口大小
         self.setWindowTitle('Magic&House SoftWare')
-        self.setWindowIcon(QIcon('icon/mh.ico'))   #设置系统图标
+        self.setWindowIcon(QIcon('image/mh.ico'))   #设置系统图标
 
         #其他窗体
         self.senderwindow = SenderWindow(mainwindow=self)
@@ -83,6 +84,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
     def on_clicked_pushButton_3(self):
         desktop = os.path.join(os.path.expanduser("~"), 'Desktop')
         fname = QFileDialog.getOpenFileName(self.centralwidget , '打开', desktop)
+
         if fname[0]:
             fpath = os.path.abspath(fname[0])
             if (not fpath.endswith('.xls')) and (not fpath.endswith('.xlsx')):
@@ -148,12 +150,20 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             if self.output:
                 for i,row in enumerate(self.output):
                     for j,cell in enumerate(row):
-                        e.setCell('sheet1',i+1,j+1,cell.get('value',''))
+                        if isinstance(cell,dict):
+                            e.setCell('sheet1',i+1,j+1,cell.get('value',''))
+                        elif isinstance(cell,str):
+                            e.setCell('sheet1', i+1, j+1, cell)
             desktop = os.path.join(os.path.expanduser("~"), 'Desktop')
-            savename = '一品周报'+time.strftime('%m%d',time.localtime())
+            savename = time.strftime('%m%d',time.localtime())
             savepath = desktop+'\\'+savename
-            fname = QFileDialog.getSaveFileName(self,'保存', savepath ,'.xlxs')
+            fname = QFileDialog.getSaveFileName(self,'保存', savepath ,'.xlsx')
             fpath = os.path.abspath(fname[0])
+            if os.path.exists(savepath+'.xlsx'):
+                answer = QMessageBox.warning(self.centralwidget,'警告！','{}.xlsx 已经存在于当前目录下，是否覆盖？'.format(savepath),
+                                             QMessageBox.Yes|QMessageBox.No,QMessageBox.No)
+                if answer == QMessageBox.No:
+                    return
             try:
                 e.save(fpath)
             except Exception as e:
@@ -194,26 +204,31 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         table.horizontalHeader().setDefaultAlignment(Qt.AlignCenter)
         for i,row in enumerate(value[1:]):
             for j,cell in enumerate(row):
-                if not cell.get('select',False):
-                    newItem = QTableWidgetItem(cell.get('value',''))
+                if isinstance(cell,dict):
+                    if not cell.get('select',False):
+                        newItem = QTableWidgetItem(cell.get('value',''))
+                        newItem.setTextAlignment(Qt.AlignCenter)
+                        table.setItem(i,j,newItem)
+                    elif not cell.get('corresponding',False):
+                        newItem = QComboBox()
+                        newItem.setAcceptDrops(True)
+                        newItem.setStyleSheet('background-color:white')
+                        newItem.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+                        newItem.addItem('')
+                        for sender in self.senderwindow.senderList[1:]:
+                            newItem.addItem(str(sender[0]))
+                        table.setCellWidget(i, j, newItem)
+                        table.cellWidget(i,j).currentTextChanged.connect(self.tableComboBoxChange)
+                        self.comboBoxList.append(newItem)
+                    else:
+                        newItem = QLineEdit()
+                        newItem.setStyleSheet('border=0px;text-align:center;background-color:white')
+                        newItem.setText('')
+                        table.setCellWidget(i, j, newItem)
+                elif isinstance(cell,str):
+                    newItem = QTableWidgetItem(cell)
                     newItem.setTextAlignment(Qt.AlignCenter)
-                    table.setItem(i,j,newItem)
-                elif not cell.get('corresponding',False):
-                    newItem = QComboBox()
-                    newItem.setAcceptDrops(True)
-                    newItem.setStyleSheet('background-color:white')
-                    newItem.setSizeAdjustPolicy(QComboBox.AdjustToContents)
-                    newItem.addItem('')
-                    for sender in self.senderwindow.senderList[1:]:
-                        newItem.addItem(str(sender[0]))
-                    table.setCellWidget(i, j, newItem)
-                    table.cellWidget(i,j).currentTextChanged.connect(self.tableComboBoxChange)
-                    self.comboBoxList.append(newItem)
-                else:
-                    newItem = QLineEdit()
-                    newItem.setStyleSheet('border=0px;text-align:center;background-color:white')
-                    newItem.setText('')
-                    table.setCellWidget(i, j, newItem)
+                    table.setItem(i, j, newItem)
             table.setEnabled(False)
             self.tableWidget = table
             self.gridLayout.addWidget(self.tableWidget)

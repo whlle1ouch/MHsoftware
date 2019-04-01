@@ -11,15 +11,15 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(1164, 692)
+        Form.resize(901, 600)
         self.gridLayoutWidget = QtWidgets.QWidget(Form)
-        self.gridLayoutWidget.setGeometry(QtCore.QRect(20, 80, 1121, 581))
+        self.gridLayoutWidget.setGeometry(QtCore.QRect(20, 80, 841, 471))
         self.gridLayoutWidget.setObjectName("gridLayoutWidget")
         self.gridLayout = QtWidgets.QGridLayout(self.gridLayoutWidget)
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.gridLayout.setObjectName("gridLayout")
         self.horizontalLayoutWidget = QtWidgets.QWidget(Form)
-        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(20, 30, 431, 41))
+        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(20, 30, 239, 41))
         self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
@@ -33,12 +33,9 @@ class Ui_Form(object):
         self.pushButton_3 = QtWidgets.QPushButton(self.horizontalLayoutWidget)
         self.pushButton_3.setObjectName("pushButton_3")
         self.horizontalLayout.addWidget(self.pushButton_3)
-        self.pushButton_4 = QtWidgets.QPushButton(self.horizontalLayoutWidget)
+        self.pushButton_4 = QtWidgets.QPushButton(Form)
+        self.pushButton_4.setGeometry(QtCore.QRect(764, 30, 81, 41))
         self.pushButton_4.setObjectName("pushButton_4")
-        self.horizontalLayout.addWidget(self.pushButton_4)
-        self.pushButton_5 = QtWidgets.QPushButton(Form)
-        self.pushButton_5.setGeometry(QtCore.QRect(1072, 32, 71, 31))
-        self.pushButton_5.setObjectName("pushButton_5")
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -46,9 +43,8 @@ class Ui_Form(object):
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
-        self.pushButton.setText(_translate("Form", "增加"))
-        self.pushButton_2.setText(_translate("Form", "修改"))
-        self.pushButton_3.setText(_translate("Form", "删除"))
-        self.pushButton_4.setText(_translate("Form", "另外为EXCEL"))
-        self.pushButton_5.setText(_translate("Form", "返回"))
+        self.pushButton.setText(_translate("Form", "修改"))
+        self.pushButton_2.setText(_translate("Form", "提交"))
+        self.pushButton_3.setText(_translate("Form", "另存"))
+        self.pushButton_4.setText(_translate("Form", "返回"))
 

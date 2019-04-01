@@ -68,7 +68,8 @@ def transform2(orderdata):
         else:
             idnum = ''
         idnum = idnum.replace(' ', '')
-        productcol = [remark , '' , '' , idnum , recipient , phone , province , city , address]
+        productcol = [pkg(remark) , pkg('',True) , pkg('',True,True) , pkg(idnum) , pkg(recipient)
+            , pkg(phone) , pkg(province) , pkg(city), pkg(address)]
         products = productConfig(config)
         for product in products:
             productnum = product[0]
@@ -76,11 +77,17 @@ def transform2(orderdata):
             productcode = product[2]
             # weight = ''
             # pureweight = ''
-            productcol.append(productcode)
-            productcol.append(productnum)
+            productcol.append(pkg(productcode))
+            productcol.append(pkg(productcode))
         cols.append(productcol)
     return cols,colformat
 
+def pkg(data, select=False , corresponding=False):
+    package = dict()
+    package['value'] = data
+    package['select'] = select
+    package['corresponding'] = corresponding
+    return package
 
 
 def colFormat():

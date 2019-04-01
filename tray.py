@@ -53,7 +53,6 @@ class TrayIcon(QSystemTrayIcon):
 
     def quit(self):
         self.setVisible(False)
-        self.quit()
         qApp.quit()
         sys.exit()
 

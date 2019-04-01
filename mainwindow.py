@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
-from ui.mh import Ui_MainWindow
-from PyQt5.QtWidgets import QMainWindow, QFileDialog,QMessageBox,QMenu,QAction,QTableWidget,QTableWidgetItem,QHeaderView
+import os
+import time
+
+from PyQt5.QtCore import QBasicTimer, QThread, pyqtSignal,Qt
 from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QMenu, QAction \
+    , QTableWidget, QTableWidgetItem, QHeaderView, QComboBox, QLineEdit
+
 from excel import Excel
-from product import transform2
-import os,time
-from PyQt5.QtCore import QBasicTimer,QThread,pyqtSignal,Qt,QPoint,QCoreApplication
-from tray import TrayIcon
 from mhsender import SenderWindow
+from product import transform2
+from tray import TrayIcon
+from ui.mh import Ui_MainWindow
 
 
 class MainWindow(QMainWindow,Ui_MainWindow):
@@ -23,6 +27,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.setupUi(self)
         self.step = 0
         self.timer = QBasicTimer()
+        self.tableWidget = None
 
         #数据处理
         self.data = None
@@ -62,6 +67,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.pushButton_3.clicked.connect(self.on_clicked_pushButton_3)
         self.pushButton_2.clicked.connect(self.on_clicked_pushButton_2)
         self.pushButton.clicked.connect(self.on_clicked_pushButton)
+        self.pushButton_5.clicked.connect(self.on_clicked_pushButton_5)
 
         self.pushButton_6.clicked.connect(self.on_clicked_pushButton_6)
         self.showNormal()
@@ -105,7 +111,6 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             try:
                 self.prb.start()
                 self.output,self.outformat = transform2(self.data)
-                print(self.output)
             except Exception as e:
                 self.showMsg('错误','转换时发生错误：\n {}'.format(e.args))
             else:
@@ -117,19 +122,21 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             self.showMsg('错误！', '请先上传数据')
             self.pushButton_2.setEnabled(True)
             self.step = 0
+    def on_clicked_pushButton_5(self):
+        if not self.tableWidget:
+            return
+        if self.pushButton_5.text() =='修改':
+            if self.tableWidget:
+                self.tableWidget.setEnabled(True)
+                self.pushButton_5.setText('提交')
+        elif self.pushButton_5.text() == '提交':
+            answer = QMessageBox.warning(self.centralwidget, '注意！', '是否确认提交修改数据？\n  提交后数据将无法恢复。',
+                                         QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if answer == QMessageBox.Yes:
+                self.tableTextChange()
+                self.pushButton_5.setText('修改')
+                self.tableWidget.setEnabled(False)
 
-    def timeEnd(self):
-        self.timer.stop()
-        self.step = 100
-        self.progressBar.setProperty("value", self.step)
-
-
-    def timerEvent(self, *args, **kwargs):
-        self.progressBar.setProperty("value", self.step)
-        if self.step >=100:
-            self.timer.stop()
-        if self.step<99:
-            self.step += 1
 
     def on_clicked_pushButton(self):
         if self.output:
@@ -141,7 +148,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             if self.output:
                 for i,row in enumerate(self.output):
                     for j,cell in enumerate(row):
-                        e.setCell('sheet1',i+1,j+1,cell)
+                        e.setCell('sheet1',i+1,j+1,cell.get('value',''))
             desktop = os.path.join(os.path.expanduser("~"), 'Desktop')
             savename = '一品周报'+time.strftime('%m%d',time.localtime())
             savepath = desktop+'\\'+savename
@@ -158,26 +165,95 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             self.showMsg('错误！','请先上传表格并完成转换。')
 
     def on_clicked_pushButton_6(self):
-        self.hide()
         self.senderwindow.show()
+
+    def timeEnd(self):
+        self.timer.stop()
+        self.step = 100
+        self.progressBar.setProperty("value", self.step)
+
+
+    def timerEvent(self, *args, **kwargs):
+        self.progressBar.setProperty("value", self.step)
+        if self.step >=100:
+            self.timer.stop()
+        if self.step<99:
+            self.step += 1
 
 
     def addTable(self, value):
         row = len(value)
         col = len(value[0])
+        self.comboBoxList = list()
         table = QTableWidget()
         table.setRowCount(row)
         table.setColumnCount(col)
         table.setHorizontalHeaderLabels(value[0])
-        self.gridLayout.addWidget(table)
+        table.horizontalHeader().setEnabled(False)
         table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        table.horizontalHeader().setDefaultAlignment(Qt.AlignCenter)
         for i,row in enumerate(value[1:]):
             for j,cell in enumerate(row):
-                newItem =  QTableWidgetItem(cell)
-                table.setItem(i, j, newItem)
+                if not cell.get('select',False):
+                    newItem = QTableWidgetItem(cell.get('value',''))
+                    newItem.setTextAlignment(Qt.AlignCenter)
+                    table.setItem(i,j,newItem)
+                elif not cell.get('corresponding',False):
+                    newItem = QComboBox()
+                    newItem.setAcceptDrops(True)
+                    newItem.setStyleSheet('background-color:white')
+                    newItem.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+                    newItem.addItem('')
+                    for sender in self.senderwindow.senderList[1:]:
+                        newItem.addItem(str(sender[0]))
+                    table.setCellWidget(i, j, newItem)
+                    table.cellWidget(i,j).currentTextChanged.connect(self.tableComboBoxChange)
+                    self.comboBoxList.append(newItem)
+                else:
+                    newItem = QLineEdit()
+                    newItem.setStyleSheet('border=0px;text-align:center;background-color:white')
+                    newItem.setText('')
+                    table.setCellWidget(i, j, newItem)
+            table.setEnabled(False)
+            self.tableWidget = table
+            self.gridLayout.addWidget(self.tableWidget)
+            # for i,combo in enumerate(self.comboBoxList):
+            #     combo.currentTextChanged.connect(lambda:self.tableComboBoxChange(i))
 
+    def tableTextChange(self):
+        if self.tableWidget:
+            row = self.tableWidget.rowCount()
+            column = self.tableWidget.columnCount()
+            output = list()
+            output.append(self.output[0])
+            for i in range(row):
+                outrow = list()
+                for j in range(column):
+                    if self.tableWidget.item(i,j):
+                        outrow.append(self.tableWidget.item(i,j).text())
+                    if self.tableWidget.cellWidget(i,j):
+                        widget = self.tableWidget.cellWidget(i,j)
+                        if isinstance(widget,QLineEdit):
+                            outrow.append(widget.text())
+                        elif isinstance(widget,QComboBox):
+                            outrow.append(widget.currentText())
 
-
+                output.append(outrow)
+            self.output = output
+    def tableComboBoxChange(self):
+        if self.sender() in self.comboBoxList:
+            row =self.comboBoxList.index(self.sender())
+            col = 1
+            if self.tableWidget:
+                if isinstance(self.sender(),QComboBox):
+                    sender = self.sender().currentText()
+                    if isinstance(self.tableWidget.cellWidget(row,col+1),QLineEdit):
+                        sender_phone =''
+                        for senders in self.senderwindow.senderList[1:]:
+                            if sender == str(senders[0]):
+                                sender_phone = senders[1]
+                                break
+                        self.tableWidget.cellWidget(row, col + 1).setText(str(sender_phone))
 
     def showMsg(self , title , msg):
         return QMessageBox.information(self.centralwidget,title,msg)

@@ -22,6 +22,6 @@ if __name__ == '__main__':
             mhaind = MainWindow()
 
         sys.exit(app.exec_())
-    except:
-        pass
+    except Exception as e:
+        print(e.args)
 

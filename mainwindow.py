@@ -5,7 +5,7 @@ import time
 from PyQt5.QtCore import QBasicTimer, QThread, pyqtSignal,Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QMenu, QAction \
-    , QTableWidget, QTableWidgetItem, QHeaderView, QComboBox, QLineEdit
+    , QTableWidget, QTableWidgetItem, QHeaderView, QComboBox, QLineEdit,QApplication
 
 from excel import Excel
 from mhsender import SenderWindow
@@ -164,8 +164,10 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             desktop = os.path.join(os.path.expanduser("~"), 'Desktop')
             savename = time.strftime('%m%d',time.localtime())
             savepath = desktop+'\\'+savename
-            fname = QFileDialog.getSaveFileName(self,'保存', savepath ,'.xlsx')
-            fpath = os.path.abspath(fname[0])
+            save_select = QFileDialog.getSaveFileName(self,'保存', savepath ,'.xlsx')
+            if save_select[0]=='':
+                return
+            fpath = os.path.abspath(save_select[0])
             if os.path.exists(savepath+'.xlsx'):
                 answer = QMessageBox.warning(self.centralwidget,'警告！','{}.xlsx 已经存在于当前目录下，是否覆盖？'.format(savepath),
                                              QMessageBox.Yes|QMessageBox.No,QMessageBox.No)
@@ -216,6 +218,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         row = len(value)
         col = len(value[0])
         self.comboBoxList = list()
+
         table = QTableWidget()
         table.setRowCount(row)
         table.setColumnCount(col)
@@ -253,9 +256,10 @@ class MainWindow(QMainWindow,Ui_MainWindow):
                     newItem.setTextAlignment(Qt.AlignHCenter)
                     newItem.setTextAlignment(Qt.AlignCenter)
                     table.setItem(i, j, newItem)
-            table.setEnabled(False)
-            self.tableWidget = table
-            self.gridLayout.addWidget(self.tableWidget)
+                QApplication.processEvents()
+        table.setEnabled(False)
+        self.tableWidget = table
+        self.gridLayout.addWidget(self.tableWidget)
 
 
     def tableTextChange(self):

@@ -2,7 +2,7 @@ from ui.sender import Ui_Form
 from PyQt5.QtWidgets import QWidget,QTableWidget,QTableWidgetItem,QHeaderView,QFileDialog,QMessageBox
 from PyQt5.QtCore import Qt
 import json,os,time
-from excel import Excel
+from excel import Excel,is_int
 
 
 class SenderWindow(QWidget,Ui_Form):
@@ -123,10 +123,17 @@ class SenderWindow(QWidget,Ui_Form):
     def save_to_local(self):
         with open('data/sender.json','w',encoding='utf-8') as f:
             data = json.dumps(self.senderList)
-            f.truncate()
             f.write(data)
     def showMsg(self , title , msg):
         return QMessageBox.information(self,title,msg)
+
+    # def checkSenderList(self ,senderlist):
+    #     if isinstance(senderlist,list):
+    #         slist =  []
+    #         for senderitem in senderlist:
+    #             sl = [int(i) if is_int(i) else str(i) for i in senderitem]
+    #             slist.append(sl)
+    #         self.senderList = slist
 
 
 

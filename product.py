@@ -78,7 +78,7 @@ def transform2(orderdata):
             # weight = ''
             # pureweight = ''
             productcol.append(pkg(productcode))
-            productcol.append(pkg(productcode))
+            productcol.append(pkg(productnum))
         cols.append(productcol)
     return cols,colformat
 

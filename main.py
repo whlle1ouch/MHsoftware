@@ -19,9 +19,10 @@ if __name__ == '__main__':
             localServer = QLocalServer()
             localServer.listen(serverName)
             LoadingWindow()
-            mhaind = MainWindow()
+            mhmain = MainWindow()
 
         sys.exit(app.exec_())
     except Exception as e:
         print(e.args)
+
 

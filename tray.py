@@ -36,7 +36,7 @@ class TrayIcon(QSystemTrayIcon):
     def other(self):
         self.activated.connect(self.iconClicked)
         self.messageClicked.connect(self.mClicked)
-        self.setIcon(QIcon('icon/tray.ico'))
+        self.setIcon(QIcon('image/tray.ico'))
         self.icon = self.MessageIcon()
 
     def iconClicked(self, reason):

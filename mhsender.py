@@ -16,6 +16,7 @@ class SenderWindow(QWidget,Ui_Form):
         QWidget.__init__(self,parent)
         self.mainwindow = mainwindow
         self.setupUi(self)
+        self.setWindowTitle('崔毛线')
         self.tableWidget = None
         self.loadSendor()
         self.setEvent()

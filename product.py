@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-import re
+import re,json
+from excel import is_int
 
 
-
-def transform(orderdata):
+def translate(orderdata):
     col = ['订单数', '物流单号', '商品条形码', '实发数量', '净重', '毛重', '证件号码', '收件人', '收货地区', '收货地址', '收件人手机']
     order = 0
     cols = list()
     cols.append(col)
     ordercol = orderdata[0]
-
+    formats = ['0', '@', '@', '0', '0.0', '0.0', '@', '@', '@', '@', '@']
     for d in orderdata[1:]:
         order += 1
         express = ''
@@ -31,12 +31,13 @@ def transform(orderdata):
             productcode = product[2]
             weight = ''
             pureweight = ''
-            productcol = [order, express, productcode, productnum, weight, pureweight, idnum, recipient, area, address,
-                          phone]
+            productcol = [to_str(order), to_str(express), to_str(productcode),to_str(productnum),to_str(weight),
+                          to_str(pureweight), to_str(idnum), to_str(recipient), to_str(area), to_str(address),
+                          to_str(phone)]
             cols.append(productcol)
-    return cols
+    return cols,formats
 
-def transform2(orderdata):
+def transform(orderdata):
     with open('data/columns.txt','r',encoding='utf-8') as f:
         colname = f.read().split(';')
     cols = list()
@@ -54,12 +55,13 @@ def transform2(orderdata):
         custom_remark = d[ordercol.index(u'客服备注')]
         client_remark = d[ordercol.index(u'客户备注')]
         config = d[ordercol.index(u'货品摘要')]
-        remark = custom_remark + client_remark + config
-
+        clientnick = d[ordercol.index(u'网名')]
         recipient = d[ordercol.index(u'收货人')]
         address = d[ordercol.index(u'地址')]
         province = address[0:3]
         city = address[3:6]
+        sendername = d[ordercol.index(u'所在店铺')]
+        senderphone = findSender(sendername)
         phone = d[ordercol.index(u'电话')]
         if re.search(re.compile(r'[0-9 ]+'), custom_remark):
             idnum = re.search(re.compile(r'[0-9 ]+'), custom_remark).group()
@@ -68,7 +70,7 @@ def transform2(orderdata):
         else:
             idnum = ''
         idnum = idnum.replace(' ', '')
-        productcol = [pkg(remark) , pkg('',True) , pkg('',True,True) , pkg(idnum) , pkg(recipient)
+        productcol = [pkg(clientnick) , pkg(sendername,True) , pkg(senderphone,True,True) , pkg(idnum) , pkg(recipient)
             , pkg(phone) , pkg(province) , pkg(city), pkg(address)]
         products = productConfig(config)
         for product in products:
@@ -82,18 +84,33 @@ def transform2(orderdata):
         cols.append(productcol)
     return cols,colformat
 
-def pkg(data, select=False , corresponding=False):
+def findSender(sender):
+    with open('data/sender.json', 'r', encoding='utf-8') as f:
+        senderList = json.loads(f.read())
+    sender_phone = ''
+    for senders in senderList[1:]:
+        if sender == str(senders[0]):
+            sender_phone = senders[1]
+    return str(sender_phone)
+
+
+
+
+def pkg(data ,  select=False , corresponding=False):
     package = dict()
-    package['value'] = data
+    package['value'] =to_str(data)
     package['select'] = select
     package['corresponding'] = corresponding
     return package
 
-
-def colFormat():
-    formats = ['0', '@', '@', '0', '0.0', '0.0', '@', '@', '@', '@', '@']
-    return formats
-
+def to_str(data):
+    if isinstance(data,str):
+        if is_int(data):
+            return data.split('.')[0]
+        else:
+            return data
+    else:
+        return str(data)
 
 
 

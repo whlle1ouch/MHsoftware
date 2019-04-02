@@ -1,5 +1,6 @@
-import sys
+import sys,ctypes
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtGui import QIcon
 from mainwindow import MainWindow
 from loading import LoadingWindow
 from PyQt5.QtNetwork import QLocalSocket,QLocalServer
@@ -20,6 +21,8 @@ if __name__ == '__main__':
             localServer.listen(serverName)
             LoadingWindow()
             mhmain = MainWindow()
+
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("myappid")
 
         sys.exit(app.exec_())
     except Exception as e:

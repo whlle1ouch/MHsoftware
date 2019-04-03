@@ -22,7 +22,7 @@ if __name__ == '__main__':
             LoadingWindow()
             mhmain = MainWindow()
 
-            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("myappid")
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("MhProcess")
 
         sys.exit(app.exec_())
     except Exception as e:

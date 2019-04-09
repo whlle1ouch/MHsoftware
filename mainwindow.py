@@ -17,11 +17,6 @@ import win32timezone
 
 class MainWindow(QMainWindow,Ui_MainWindow):
 
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(cls,'_instance'):
-            cls._instance = QMainWindow.__new__(cls)
-        return cls._instance
-
 
     def __init__(self):
         QMainWindow.__init__(self)

@@ -15,7 +15,7 @@ def translate(orderdata):
         express = ''
         recipient = d[ordercol.index(u'收货人')]
         address = d[ordercol.index(u'地址')]
-        area = address[0:6]
+        area = parseArea(address)
         phone = d[ordercol.index(u'电话')]
         custom_remark = d[ordercol.index(u'客服备注')]
         client_remark = d[ordercol.index(u'客户备注')]
@@ -97,7 +97,31 @@ def findSender(sender):
             sender_phone = senders[1]
     return str(sender_phone)
 
+def parseArea(address):
+    if address:
+        address = fill_invisible_blank(address)
+        i = 0
+        res = list()
+        pts = [u'[北天重上][京津庆海]市?|.*?省|.*?自治区',
+                u'.*?市区?|.*?州|.*?区',
+               u'.*?[市县区旗镇]']
+        for pt in pts:
+            word = address[i:]
+            sr = re.search(re.compile(pt), word)
+            if sr:
+                res.append(sr.group())
+                i += len(sr.group())
+        return '-'.join(res)
+    else:
+        return ''
 
+
+def fill_invisible_blank(string):
+    invisible_blank = [u'\u200b',u'\u200e']
+    for ib in invisible_blank:
+        if ib in string:
+            string = string.replace(ib,'')
+    return string
 
 
 def pkg(data ,  select=False , corresponding=False):
@@ -123,21 +147,25 @@ def productConfig(pstr):
     productlist = re.split(re.compile('\|'),pstr)
     if productlist:
         for p in productlist:
-            pcount = str_search(r'\([0-9]\)',p)[1:-1]
-            pname = str_search(r'\)[^\t\n\r\f\v\ ]*',p)[1:]
-            pcode = str_search(r'[0-9]{5,100}',p)
+            pcount = str_search(r'\((\d+)\)',p,1)
+            pname = str_search(r'\)([^\t\n\r\f\v\ ]*)',p,1)
+            pcode = str_search(r'[0-9]{8,100}',p)
             config.append([pcount,pname,pcode])
     return config
 
 
-def str_search(pattern,s):
+def str_search(pattern,s,*args):
     if re.search(re.compile(pattern), s):
-        return re.search(re.compile(pattern), s).group()
+        return re.search(re.compile(pattern), s).group(*args)
     else:
         return ''
 
 
 def creditIdSearch(string):
+    if string=='':
+        return ''
+    if string[-1]=='×':
+        string = string[:-1]+'x'
     comp = '[1-9][0-9]{5}(19[0-9]{2}|20[0-9]{2})((01|03|05|07|08|10|12)(0[1-9]|[1-2][0-9]|3[0-1])|(04|06|09|11)(0[1-9]|[1-2][0-9]|30)|02(0[1-9]|[1-2][0-9]))[0-9]{3}[0-9Xx]'
     pattern = re.compile(comp)
     matchString = string.replace(' ','')

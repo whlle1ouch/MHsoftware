@@ -66,13 +66,14 @@ def transform(orderdata):
         sendername = d[ordercol.index(u'所在店铺')]
         senderphone = findSender(sendername)
         phone = d[ordercol.index(u'电话')]
-        if re.search(re.compile(r'[0-9 ]+'), custom_remark):
-            idnum = re.search(re.compile(r'[0-9 ]+'), custom_remark).group()
-        elif re.match(re.compile(r'[0-9 ]+'), client_remark):
-            idnum = re.search(re.compile(r'[0-9 ]+'), client_remark).group()
+        idnum1 = creditIdSearch(custom_remark)
+        idnum2 = creditIdSearch(client_remark)
+        if idnum1 == '':
+            idnum = idnum2
         else:
-            idnum = ''
-        idnum = idnum.replace(' ', '')
+            idnum = idnum1
+
+
         productcol = [pkg(clientnick) , pkg(sendername,True) , pkg(senderphone,True,True) , pkg(idnum) , pkg(recipient)
             , pkg(phone) , pkg(province) , pkg(city), pkg(address)]
         products = productConfig(config)
@@ -135,4 +136,14 @@ def str_search(pattern,s):
     else:
         return ''
 
+
+def creditIdSearch(string):
+    comp = '[1-9][0-9]{5}(19[0-9]{2}|20[0-9]{2})((01|03|05|07|08|10|12)(0[1-9]|[1-2][0-9]|3[0-1])|(04|06|09|11)(0[1-9]|[1-2][0-9]|30)|02(0[1-9]|[1-2][0-9]))[0-9]{3}[0-9Xx]'
+    pattern = re.compile(comp)
+    matchString = string.replace(' ','')
+    m = re.search(pattern,matchString)
+    if m:
+        return m.group()
+    else:
+        return ''
 

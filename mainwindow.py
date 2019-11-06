@@ -33,8 +33,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         #主窗体
         self.setFixedSize(self.width(), self.height())   ##固定窗口大小
         self.setWindowTitle('Magic&House SoftWare')
-        self.setWindowIcon(QIcon('/image/mh.ico'))   #设置系统图标
-
+        self.setWindowIcon(QIcon('image/mh.ico'))   #设置系统图标
 
         #其他窗体
         self.senderwindow = SenderWindow(mainwindow=self)

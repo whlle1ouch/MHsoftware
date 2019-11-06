@@ -17,12 +17,6 @@ import win32timezone
 
 class MainWindow(QMainWindow,Ui_MainWindow):
 
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(cls,'_instance'):
-            cls._instance = QMainWindow.__new__(cls)
-        return cls._instance
-
-
     def __init__(self):
         QMainWindow.__init__(self)
         self.setupUi(self)
@@ -130,6 +124,8 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             self.showMsg('错误！', '请先上传数据')
             self.pushButton_2.setEnabled(True)
             self.step = 0
+
+
     def on_clicked_pushButton_5(self):
         if not self.tableWidget:
             return
@@ -238,7 +234,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
                     elif not cell.get('corresponding',False):
                         newItem = QComboBox()
                         newItem.setAcceptDrops(True)
-                        newItem.setStyleSheet('margin:0;padding:0;border:0.5pxbackground-color:white;text-align:center;vertical-align:middle;')
+                        newItem.setStyleSheet('margin:0;padding:0;border:0.5px;background-color:white;text-align:center;vertical-align:middle;')
                         newItem.setSizeAdjustPolicy(QComboBox.AdjustToContents)
                         newItem.addItem(cell.get('value',''))
                         for sender in self.senderwindow.senderList[1:]:

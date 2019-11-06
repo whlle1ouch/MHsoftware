@@ -4,26 +4,29 @@ from excel import is_int
 
 
 def translate(orderdata):
-    col = ['订单数', '物流单号', '商品条形码', '实发数量', '净重', '毛重', '证件号码', '收件人', '收货地区', '收货地址', '收件人手机']
-    order = 0
+    col = ['订单类型','订单号','物流公司','物流单号','商品条形码','实发数量','净重','毛重','证件号码','收件人', '收货地区','收货地址', '收件人手机']
+    # order = 0
     cols = list()
     cols.append(col)
     ordercol = orderdata[0]
-    formats = ['0', '@', '@', '0', '0.0', '0.0', '@', '@', '@', '@', '@']
+    formats = ['0','@','@','@','@','0','0.0','0.0','@','@','@','@','@']
     for d in orderdata[1:]:
-        order += 1
+        # order += 1
         express = ''
         recipient = d[ordercol.index(u'收货人')]
         address = d[ordercol.index(u'地址')]
         area = address[0:6]
         phone = d[ordercol.index(u'电话')]
-        if d[ordercol.index(u'客服备注')] != '':
-            idnum = re.search(re.compile(r'[0-9 ]+'),d[ordercol.index(u'客服备注')]).group()
-        elif d[ordercol.index(u'客户备注')] != '':
-            idnum = re.search(re.compile(r'[0-9 ]+'),d[ordercol.index(u'客户备注')]).group()
+        custom_remark = d[ordercol.index(u'客服备注')]
+        client_remark = d[ordercol.index(u'客户备注')]
+
+        idnum1 = creditIdSearch(custom_remark)
+        idnum2 = creditIdSearch(client_remark)
+        if idnum1=='':
+            idnum = idnum2
         else:
-            idnum = ''
-        idnum = idnum.replace(' ','')
+            idnum = idnum1
+
         products = productConfig(d[ordercol.index(u'货品摘要')])
         for product in products:
             productnum = product[0]
@@ -31,7 +34,7 @@ def translate(orderdata):
             productcode = product[2]
             weight = ''
             pureweight = ''
-            productcol = [to_str(order), to_str(express), to_str(productcode),to_str(productnum),to_str(weight),
+            productcol = ['0',to_str(express), '', to_str(express), to_str(productcode),to_str(productnum),to_str(weight),
                           to_str(pureweight), to_str(idnum), to_str(recipient), to_str(area), to_str(address),
                           to_str(phone)]
             cols.append(productcol)

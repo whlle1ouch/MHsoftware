@@ -30,7 +30,6 @@ def translate(data):
             idnum = idnum2
         else:
             idnum = idnum1
-
         products = productConfig(d[ordercol.index(u'货品摘要')])
         for product in products:
             productnum = product[0]
@@ -128,7 +127,7 @@ def parseArea(address):
 def parseSpec(data):
     ordercol = data[0]
     pname_ind = ordercol.index(u'品名')
-    spec_ind = ordercol.index(u'规格')
+    spec_ind = ordercol.index(u'编号')
     res = dict()
     for d in data[1:]:
         pname = d[pname_ind]
@@ -173,7 +172,7 @@ def productConfig(pstr):
     if productlist:
         for p in productlist:
             pcount = str_search(r'\((\d+)\)',p,1).strip()
-            pname = str_search(r'\)([^\t\n\r\f\v]*)\~',p,1).strip()
+            pname = str_search(r'\)([^\t\n\r\f\v\~\-]*)',p,1).strip()
             config.append([pcount,pname])
     return config
 

@@ -6,7 +6,6 @@ from excel import is_int
 def translate(data):
     orderdata = data.get('order_data',[])
     spec_dict = parseSpec(data.get('detail_data',[]))
-    print(spec_dict)
 
     col = ['订单类型','订单号','物流公司','物流单号','商品条形码','实发数量','净重','毛重','证件号码','收件人', '收货地区','收货地址', '收件人手机','收货地址（完整）']
     # order = 0
@@ -39,7 +38,6 @@ def translate(data):
             shipcop = ''
             productname = product[1]
             productcode = spec_dict.get(productname,'')
-            print(productname,productcode)
             weight = '1'
             pureweight = '0'
             productcol = [to_str(ordertype),to_str(express), to_str(shipcop), to_str(express),

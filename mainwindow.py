@@ -87,8 +87,12 @@ class MainWindow(QMainWindow,Ui_MainWindow):
                 return
             e = Excel(fpath)
             try:
-                self.data = e.getContiguousRange('订单表', 1, 1)
-                self.data = e.fixStringsAndDates(self.data)
+                data = dict()
+                order_sheet = e.getContiguousRange('订单表', 1, 1)
+                data['order_data'] = e.fixStringsAndDates(order_sheet)
+                detail_sheet = e.getContiguousRange('明细表', 1, 1)
+                data['detail_data'] = e.fixStringsAndDates(detail_sheet)
+                self.data = data
             except Exception as e:
                 self.showMsg('错误！','发生错误：\n {}'.format(e.args))
             finally:

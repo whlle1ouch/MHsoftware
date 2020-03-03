@@ -16,7 +16,10 @@ def translate(data):
     formats = ['0','@','@','@','@','0','0.0','0.0','@','@','@','@','@','@']
     for d in orderdata[1:]:
         # order += 1
-        express = ''
+        if  u'物流单号' in ordercol:
+            express = d[ordercol.index(u'物流单号')]
+        else:
+            express = ""
         recipient = d[ordercol.index(u'收货人')]
         full_address = clear_invisible_blank(d[ordercol.index(u'地址')])
         area,address = parseArea(full_address)
@@ -36,7 +39,7 @@ def translate(data):
             ordertype = '4'
             shipcop = ''
             productname = product[1]
-            productcode = spec_dict.get(productname,'')
+            productcode = get_pcode(productname,spec_dict)
             weight = '1'
             pureweight = '0'
             productcol = [to_str(ordertype),to_str(express), to_str(shipcop), to_str(express),
@@ -86,7 +89,7 @@ def transform(data):
         for product in products:
             productnum = product[0]
             productname = product[1]
-            productcode = spec_dict.get(productname,'')
+            productcode = get_pcode(productname,spec_dict)
             # weight = ''
             # pureweight = ''
             productcol.append(pkg(productcode))
@@ -102,6 +105,23 @@ def findSender(sender):
         if sender == str(senders[0]):
             sender_phone = senders[1]
     return str(sender_phone)
+
+def get_pcode(name, pdict):
+    code = pdict.get(name,None)
+    if code:
+        return code
+    else:
+        l = ''
+        m = 0
+        for p,v in pdict.items():
+            p1 = p.strip()
+            if name.find(p1)>-1 and len(p1)>m:
+                l = v
+                m = len(p1)
+        return l
+
+
+
 
 def parseArea(address):
     if address:
